@@ -1,0 +1,29 @@
+steps:
+- name: gcr.io/cloud-builders/gcloud
+  args: ['ml-engine', 'jobs', 'submit', 'training', '${_JOB_NAME}', '--package-path=trainer', '--module-name=trainer.task', '--staging-bucket="gs://$PROJECT_ID-ml"', '--region=us-central1', '--config=config.yaml', '--output_path="${_TRAIN_PATH}"', '--n_episodes=10000', '--learning_rate=0.001', '--learning_rate=0.001', '--n_updates=50', '--batch_size=50', '--env_name=${_ENV_NAME}']
+substitutions:
+    _TRAIN_BUCKET: gs://metal-tile-ai-ml
+    _TRAIN_PATH: ${_TRAIN_BUCKET}/dqn/${_JOB_NAME}
+    _ENV_NAME: CartPole-v1 
+
+
+
+JOB_NAME="dqn`date '+%Y%m%d%H%M%S'`"
+PROJECT_ID=`gcloud config list project --format "value(core.project)"`
+TRAIN_BUCKET=gs://${PROJECT_ID}-ml
+TRAIN_PATH=${TRAIN_BUCKET}/dqn/${JOB_NAME}
+ENV_NAME="CartPole-v1"
+
+gcloud ml-engine jobs submit training ${JOB_NAME} \
+  --package-path=trainer \
+  --module-name=trainer.task \
+  --staging-bucket="gs://${PROJECT_ID}-ml" \
+  --region=us-central1 \
+  --config=config.yaml \
+  -- \
+  --output_path="${TRAIN_PATH}" \
+  --n_episodes=10000 \
+  --learning_rate=0.001 \
+  --n_updates=50 \
+  --batch_size=50 \
+  --env_name=${ENV_NAME}
